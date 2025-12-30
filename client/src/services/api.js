@@ -1,22 +1,15 @@
-const API_BASE = "http://localhost:5000/api";
+import axios from "axios";
 
-export const apiRequest = async (endpoint, method = "GET", body) => {
+const api = axios.create({
+  baseURL: "http://localhost:5000/api",
+});
+
+api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
-
-  const res = await fetch(`${API_BASE}${endpoint}`, {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token && { Authorization: `Bearer ${token}` }),
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-
-  const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(data.error || "Something went wrong");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
+  return config;
+});
 
-  return data;
-};
+export default api; // ✅ THIS WAS MISSING OR WRONG
