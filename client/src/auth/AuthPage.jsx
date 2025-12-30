@@ -2,12 +2,15 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { login, register } from "../services/auth.service";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function AuthPage() {
   const [mode, setMode] = useState("login");
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState("");
-  const { login: loginUser } = useAuth();
+
+  const { login: loginUser } = useAuth();   // ✅ FIXED
+  const navigate = useNavigate();           // ✅ WILL BE USED
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -19,7 +22,8 @@ export default function AuthPage() {
     try {
       if (mode === "login") {
         const data = await login(form.email, form.password);
-        loginUser(data);
+        loginUser(data);                     // save user + token
+        navigate("/dashboard");              // ✅ REDIRECT
       } else {
         await register(form.name, form.email, form.password);
         setMode("login");
