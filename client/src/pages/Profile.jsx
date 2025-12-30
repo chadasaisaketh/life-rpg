@@ -1,13 +1,11 @@
-import { useAuth } from "../context/AuthContext";
-
-export default function Dashboard() {
+export default function Profile() {
   return (
     <div>
       <h1 className="text-3xl font-bold text-neonPurple mb-2">
-        Dashboard
+        Profile
       </h1>
       <p className="text-gray-400">
-        This is your Life RPG control center.
+        Character stats, BMI, and personal details.
       </p>
     </div>
   );

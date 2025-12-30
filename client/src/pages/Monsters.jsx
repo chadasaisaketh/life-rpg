@@ -1,13 +1,11 @@
-import { useAuth } from "../context/AuthContext";
-
-export default function Dashboard() {
+export default function Monsters() {
   return (
     <div>
       <h1 className="text-3xl font-bold text-neonPurple mb-2">
-        Dashboard
+        Monsters
       </h1>
       <p className="text-gray-400">
-        This is your Life RPG control center.
+        Bad habits manifest as enemies here.
       </p>
     </div>
   );
