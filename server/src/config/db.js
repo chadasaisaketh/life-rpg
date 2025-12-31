@@ -1,17 +1,16 @@
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
+import path from "path";
 
-export const db = await open({
-  filename: "./life.db",
+const dbPath = path.resolve(process.cwd(), "life.db");
+
+console.log("🟢 SQLite DB path:", dbPath);
+
+const db = await open({
+  filename: dbPath,
   driver: sqlite3.Database,
 });
 
-await db.exec(`
-  CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT,
-    email TEXT UNIQUE,
-    password TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-  );
-`);
+await db.exec("PRAGMA foreign_keys = ON;");
+
+export default db;

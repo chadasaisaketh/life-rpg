@@ -1,13 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import HabitItem from "../components/HabitItem";
 import AddHabitModal from "../components/AddHabitModal";
 import WeekView from "../components/WeekView";
-
-const XP_BY_DIFFICULTY = {
-  easy: 10,
-  medium: 25,
-  hard: 50,
-};
+import {
+  getTodayHabits,
+  addHabit,
+  logHabit,
+} from "../services/habit.service";
 
 export default function Habits() {
   const [view, setView] = useState("day");
@@ -16,39 +15,38 @@ export default function Habits() {
   const [dailyXP, setDailyXP] = useState(0);
   const [xpFlash, setXpFlash] = useState(null);
 
-  const weeklyData = []; // unchanged
+  /* FETCH TODAY HABITS */
+  useEffect(() => {
+    fetchHabits();
+  }, []);
 
-  const handleAddHabit = (habit) => {
-    setHabits((prev) => [
-      ...prev,
-      { id: Date.now(), ...habit, status: "pending" },
-    ]);
+  const fetchHabits = async () => {
+    const data = await getTodayHabits();
+    setHabits(data);
   };
 
-  const handleAction = (id, action) => {
-    setHabits((prev) =>
-      prev.map((h) => {
-        if (h.id !== id) return h;
+  /* ADD HABIT */
+  const handleAddHabit = async (habit) => {
+    await addHabit(habit);
+    fetchHabits();
+  };
 
-        let gainedXP = 0;
-        const xpValue = XP_BY_DIFFICULTY[h.difficulty];
+  /* LOG HABIT ACTION */
+  const handleAction = async (habit, action) => {
+    const res = await logHabit({
+      habit_id: habit.id,
+      status: action,
+      type: habit.type,
+      difficulty: habit.difficulty,
+    });
 
-        if (
-          (h.type === "good" && action === "done") ||
-          (h.type === "bad" && action === "resisted")
-        ) {
-          gainedXP = xpValue;
-        }
+    if (res.xp > 0) {
+      setDailyXP((xp) => xp + res.xp);
+      setXpFlash(`+${res.xp} XP`);
+      setTimeout(() => setXpFlash(null), 800);
+    }
 
-        if (gainedXP > 0) {
-          setDailyXP((xp) => xp + gainedXP);
-          setXpFlash(`+${gainedXP} XP`);
-          setTimeout(() => setXpFlash(null), 800);
-        }
-
-        return { ...h, status: action };
-      })
-    );
+    fetchHabits();
   };
 
   return (
@@ -89,7 +87,7 @@ export default function Habits() {
         </div>
       )}
 
-      {/* Views */}
+      {/* DAY VIEW */}
       {view === "day" && (
         <>
           <button
@@ -102,7 +100,7 @@ export default function Habits() {
           <div className="flex flex-col gap-4">
             {habits.length === 0 && (
               <p className="text-gray-400">
-                No habits planned for today. Add your first quest.
+                No habits planned for today.
               </p>
             )}
 
@@ -111,7 +109,7 @@ export default function Habits() {
                 key={habit.id}
                 habit={habit}
                 onAction={(action) =>
-                  handleAction(habit.id, action)
+                  handleAction(habit, action)
                 }
               />
             ))}
@@ -119,7 +117,9 @@ export default function Habits() {
         </>
       )}
 
-      {view === "week" && <WeekView data={weeklyData} />}
+      {view === "week" && (
+        <WeekView data={[]} />
+      )}
 
       {view === "month" && (
         <p className="text-gray-400">

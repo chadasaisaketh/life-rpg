@@ -1,4 +1,5 @@
-import db from "./db.js";
+import db from "./config/db.js";
+
 
 async function init() {
   await db.exec(`
@@ -16,9 +17,10 @@ async function init() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER,
       name TEXT,
-      type TEXT,
-      xp INTEGER,
-      created_at TIMESTAMP,
+      type TEXT CHECK(type IN ('good','bad')),
+      category TEXT,
+      difficulty TEXT CHECK(difficulty IN ('easy','medium','hard')),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY(user_id) REFERENCES users(id)
     );
 
@@ -26,10 +28,20 @@ async function init() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER,
       habit_id INTEGER,
-      completed BOOLEAN,
-      created_at TIMESTAMP,
+      date TEXT, -- YYYY-MM-DD
+      status TEXT CHECK(status IN ('done','skipped','did','resisted')),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY(user_id) REFERENCES users(id),
       FOREIGN KEY(habit_id) REFERENCES habits(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS xp_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER,
+      source TEXT,
+      amount INTEGER,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY(user_id) REFERENCES users(id)
     );
   `);
 

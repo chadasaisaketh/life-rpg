@@ -12,4 +12,4 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-export default api; // ✅ THIS WAS MISSING OR WRONG
+export default api;

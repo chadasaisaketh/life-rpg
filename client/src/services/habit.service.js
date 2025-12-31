@@ -1,27 +1,29 @@
 import api from "./api";
 
-/* GET today habits (planning) */
+/* GET today's habits */
 export const getTodayHabits = async () => {
   const res = await api.get("/habits/today");
   return res.data;
 };
-export const getWeekHabits = () =>
-  api.get("/habits/week").then(res => res.data);
 
-export const addHabit = (data) =>
-  api.post("/habits", data);
-
-/* LOG habit completion / skip */
-export const logHabit = async ({ habitId, completed }) => {
-  const res = await api.post("/habits/log", {
-    habitId,
-    completed,
-  });
+/* ADD habit (definition) */
+export const addHabit = async (data) => {
+  const res = await api.post("/habits", data);
   return res.data;
 };
 
-/* GET weekly stats */
-export const getWeeklyStats = async () => {
-  const res = await api.get("/habits/week");
-  return res.data;
+/* LOG habit action */
+export const logHabit = async ({
+  habit_id,
+  status,
+  type,
+  difficulty,
+}) => {
+  const res = await api.post("/habits/log", {
+    habit_id,
+    status,
+    type,
+    difficulty,
+  });
+  return res.data; // { xp }
 };
