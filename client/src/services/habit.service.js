@@ -37,3 +37,18 @@ export const getWeekHabits = async (startDate) => {
   });
   return res.data;
 };
+
+export const getWeekCategorySummary = async (startDate) => {
+  const res = await api.get(
+    `/habits/week/categories?start=${startDate}`
+  );
+  return res.data;
+};
+
+export async function getMonthCategorySummary(month) {
+  const res = await api.get(
+    `/habits/month/categories?month=${month}`
+  );
+  return res.data;
+}
+

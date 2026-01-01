@@ -177,23 +177,20 @@ export async function getWeekCategorySummary(userId, startDate) {
     `
     SELECT
       h.category,
-      COUNT(*) AS total,
-      SUM(
-        CASE 
-          WHEN hl.status IN ('done', 'resisted') THEN 1
-          ELSE 0
-        END
-      ) AS success
+      hl.date,
+      COUNT(*) as count
     FROM habit_logs hl
     JOIN habits h ON h.id = hl.habit_id
     WHERE hl.user_id = ?
-      AND hl.date BETWEEN DATE(?) AND DATE(?, '+6 days')
-    GROUP BY h.category
-    ORDER BY h.category
+      AND hl.date >= ?
+      AND hl.status IN ('done', 'resisted')
+    GROUP BY h.category, hl.date
+    ORDER BY hl.date
     `,
-    [userId, startDate, startDate]
+    [userId, startDate]
   );
 }
+
 /**
  * Get monthly category summary
  * @param {number} userId
@@ -204,19 +201,15 @@ export async function getMonthCategorySummary(userId, month) {
     `
     SELECT
       h.category,
-      COUNT(*) AS total,
-      SUM(
-        CASE 
-          WHEN hl.status IN ('done', 'resisted') THEN 1
-          ELSE 0
-        END
-      ) AS success
+      hl.date,
+      COUNT(*) AS count
     FROM habit_logs hl
     JOIN habits h ON h.id = hl.habit_id
     WHERE hl.user_id = ?
       AND strftime('%Y-%m', hl.date) = ?
-    GROUP BY h.category
-    ORDER BY h.category
+      AND hl.status IN ('done', 'resisted')
+    GROUP BY h.category, hl.date
+    ORDER BY hl.date
     `,
     [userId, month]
   );

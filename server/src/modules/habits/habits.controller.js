@@ -98,18 +98,10 @@ export async function getWeekCategorySummary(req, res, next) {
 export async function getMonthCategorySummary(req, res, next) {
   try {
     const { month } = req.query;
-
-    if (!month) {
-      return res.status(400).json({
-        error: "month (YYYY-MM) required",
-      });
-    }
-
     const data = await habitsService.getMonthCategorySummary(
       req.user.id,
       month
     );
-
     res.json(data);
   } catch (err) {
     next(err);

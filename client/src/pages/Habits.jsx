@@ -4,12 +4,21 @@ import HabitItem from "../components/HabitItem";
 import AddHabitModal from "../components/AddHabitModal";
 import WeekView from "../components/WeekView";
 import { startOfWeek, format } from "date-fns";
+import WeeklyCategoryBars from "../components/WeeklyCategoryBars";
+import CategoryLegend from "../components/CategoryLegend";
+
+import MonthlyHeatmap from "../components/MonthlyHeatmap";
+import { getMonthCategorySummary } from "../services/habit.service";
+import MonthlyCalendar from "../components/MonthlyCalendar";
+import MonthlyTrend from "../components/MonthlyTrend";
+
+
 
 import {
   getTodayHabits,
   addHabit,
   logHabit,
-  getWeekHabits,
+  getWeekCategorySummary,
 } from "../services/habit.service";
 
 export default function Habits() {
@@ -18,14 +27,15 @@ export default function Habits() {
   const [view, setView] = useState("day");
   const [showModal, setShowModal] = useState(false);
 
-  // Day view
+  // DAY VIEW
   const [habits, setHabits] = useState([]);
 
-  // Week view
+  // WEEK VIEW
   const [weekData, setWeekData] = useState([]);
 
   const [xpFlash, setXpFlash] = useState(null);
-
+  const [monthData, setMonthData] = useState([]);
+  
   /* ---------------- DAY VIEW ---------------- */
 
   useEffect(() => {
@@ -52,64 +62,47 @@ export default function Habits() {
       difficulty: habit.difficulty,
     });
 
+    // GLOBAL XP UPDATE
     if (res.xp !== 0) {
       updateXP(res.total_xp);
       setXpFlash(`${res.xp > 0 ? "+" : ""}${res.xp} XP`);
       setTimeout(() => setXpFlash(null), 800);
     }
 
-    // remove from today view
+    // Remove habit from today list
     setHabits((prev) => prev.filter((h) => h.id !== habit.id));
   };
 
   /* ---------------- WEEK VIEW ---------------- */
 
-  useEffect(() => {
-    if (view === "week") {
-      fetchWeekData();
-    }
-  }, [view]);
+  /* ---------------- WEEK VIEW ---------------- */
 
-  const fetchWeekData = async () => {
+useEffect(() => {
+  if (view === "week") {
+    fetchWeekCategoryData();
+  }
+}, [view]);
+
+const fetchWeekCategoryData = async () => {
+  try {
     const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
     const startDate = format(weekStart, "yyyy-MM-dd");
 
-    const rows = await getWeekHabits(startDate);
+    const data = await getWeekCategorySummary(startDate);
 
-    const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-    const map = {};
+    setWeekData(data); // 👈 VERY IMPORTANT
+  } catch (err) {
+    console.error("Failed to fetch week data", err);
+    setWeekData([]);
+  }
+};
+useEffect(() => {
+  if (view === "month") {
+    const month = format(new Date(), "yyyy-MM");
+    getMonthCategorySummary(month).then(setMonthData);
+  }
+}, [view]);
 
-    rows.forEach((row) => {
-      if (!map[row.habit_id]) {
-        map[row.habit_id] = {
-          id: row.habit_id,
-          name: row.name,
-          category: row.category,
-          week: {
-            Mon: null,
-            Tue: null,
-            Wed: null,
-            Thu: null,
-            Fri: null,
-            Sat: null,
-            Sun: null,
-          },
-        };
-      }
-
-      if (row.date) {
-        const dayIndex = (new Date(row.date).getDay() + 6) % 7;
-        const day = days[dayIndex];
-
-        map[row.habit_id].week[day] =
-          row.status === "done" || row.status === "resisted"
-            ? "success"
-            : "fail";
-      }
-    });
-
-    setWeekData(Object.values(map));
-  };
 
   /* ---------------- RENDER ---------------- */
 
@@ -176,14 +169,30 @@ export default function Habits() {
       )}
 
       {/* WEEK VIEW */}
-      {view === "week" && <WeekView data={weekData} />}
+      {view === "week" && (
+  <>
+    <WeekView data={weekData} />
 
-      {/* MONTH VIEW (NEXT) */}
+    <WeeklyCategoryBars
+      data={weekData}
+    />
+  </>
+)}
+
+
+      {/* MONTH VIEW */}
       {view === "month" && (
-        <p className="text-gray-400">Month view coming next.</p>
-      )}
+  <>
+    <MonthlyCalendar data={monthData} />
+    <CategoryLegend />
+    <MonthlyTrend data={monthData} />
+  </>
+)}
 
-      {/* MODAL */}
+
+
+
+      {/* ADD MODAL */}
       {showModal && (
         <AddHabitModal
           onClose={() => setShowModal(false)}
@@ -192,4 +201,16 @@ export default function Habits() {
       )}
     </div>
   );
+}
+function aggregateWeeklyCategory(data) {
+  const map = {};
+
+  data.forEach((row) => {
+    map[row.category] = (map[row.category] || 0) + row.count;
+  });
+
+  return Object.entries(map).map(([category, total]) => ({
+    category,
+    total,
+  }));
 }

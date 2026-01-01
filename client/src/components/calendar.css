@@ -1,0 +1,47 @@
+.react-calendar {
+  background: transparent;
+  border: none;
+  color: white;
+}
+
+.react-calendar__tile {
+  border-radius: 6px;
+  height: 60px;
+}
+
+/* Intensity levels */
+.cal-0 {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.cal-1 {
+  background: rgba(34, 197, 94, 0.4);
+}
+
+.cal-2 {
+  background: rgba(34, 197, 94, 0.65);
+}
+
+.cal-3 {
+  background: rgba(34, 197, 94, 0.9);
+}
+/* CATEGORY COLOR OVERLAYS */
+.cal-body {
+  box-shadow: inset 0 0 0 2px rgba(59, 130, 246, 0.8); /* blue */
+}
+
+.cal-learning {
+  box-shadow: inset 0 0 0 2px rgba(168, 85, 247, 0.8); /* purple */
+}
+
+.cal-mind {
+  box-shadow: inset 0 0 0 2px rgba(34, 197, 94, 0.8); /* green */
+}
+
+.cal-spiritual {
+  box-shadow: inset 0 0 0 2px rgba(14, 165, 233, 0.8); /* cyan */
+}
+
+.cal-wealth {
+  box-shadow: inset 0 0 0 2px rgba(234, 179, 8, 0.8); /* gold */
+}

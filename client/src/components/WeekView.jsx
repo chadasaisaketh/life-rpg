@@ -1,54 +1,48 @@
-const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+import { startOfWeek, addDays, format } from "date-fns";
+
+const CATEGORIES = ["Body", "Learning", "Mind", "Spiritual", "Wealth"];
 
 export default function WeekView({ data }) {
+  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+  const days = [...Array(7)].map((_, i) =>
+    format(addDays(weekStart, i), "yyyy-MM-dd")
+  );
+
   return (
-    <div className="overflow-x-auto">
+    <div className="mt-6 overflow-x-auto">
       <table className="w-full border-collapse">
         <thead>
           <tr>
-            <th className="text-left text-gray-400 py-2">Habit</th>
-            {days.map((day) => (
-              <th key={day} className="text-center text-gray-400">
-                {day}
+            <th className="p-2 text-left text-gray-400">Category</th>
+            {days.map((d) => (
+              <th key={d} className="p-2 text-gray-300">
+                {format(new Date(d), "EEE")}
               </th>
             ))}
           </tr>
         </thead>
 
         <tbody>
-          {data.map((habit) => (
-            <tr key={habit.id} className="border-t border-white/10">
-              <td className="py-3">
-                <div>
-                  <p className="font-semibold">{habit.name}</p>
-                  <span
-                    className={`text-xs ${
-                      {
-                        Body: "text-green-400",
-                        Learning: "text-blue-400",
-                        Spiritual: "text-purple-400",
-                        Mind: "text-red-400",
-                        Wealth: "text-yellow-400",
-                      }[habit.category]
-                    }`}
-                  >
-                    {habit.category}
-                  </span>
-                </div>
+          {CATEGORIES.map((cat) => (
+            <tr key={cat} className="border-t border-white/10">
+              <td className="p-2 font-semibold text-neonBlue">
+                {cat}
               </td>
 
               {days.map((day) => {
-                const status = habit.week[day];
-
-                let color = "bg-gray-600";
-                if (status === "success") color = "bg-green-500";
-                if (status === "fail") color = "bg-red-500";
+                const entry = data.find(
+                  (d) => d.date === day && d.category === cat
+                );
 
                 return (
-                  <td key={day} className="text-center">
-                    <span
-                      className={`inline-block w-4 h-4 rounded-full ${color}`}
-                    />
+                  <td key={day} className="p-2 text-center">
+                    {entry ? (
+                      <span className="text-green-400 font-bold">
+                        {entry.count}
+                      </span>
+                    ) : (
+                      <span className="text-gray-600">•</span>
+                    )}
                   </td>
                 );
               })}
