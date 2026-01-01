@@ -24,14 +24,21 @@ export async function logHabitAction(req, res, next) {
       req.user.id,
       req.body
     );
-    res.json(result);
+
+    // 🔥 Explicit response (important for frontend sync)
+    res.json({
+      habit_id: result.habit_id,
+      status: result.status,
+      xp: result.xp,
+      total_xp: result.total_xp,
+    });
   } catch (err) {
     next(err);
   }
 }
 
 /**
- * Get today's habits
+ * Get today's habits (unlogged only)
  */
 export async function getTodayHabits(req, res, next) {
   try {

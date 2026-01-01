@@ -37,7 +37,7 @@ export async function logHabitAction(userId, data) {
   const { habit_id, status, type, difficulty } = data;
   const date = getTodayDate();
 
-  // Save habit log
+  // 1️⃣ Save habit log
   await db.run(
     `
     INSERT INTO habit_logs (user_id, habit_id, date, status)
@@ -46,21 +46,29 @@ export async function logHabitAction(userId, data) {
     [userId, habit_id, date, status]
   );
 
-  let xpGained = 0;
+  let xp = 0;
 
-  // XP rules
-  if (
-    (type === "good" && status === "done") ||
-    (type === "bad" && status === "resisted")
-  ) {
-    xpGained = XP_MAP[difficulty];
+  // 2️⃣ XP RULES (FINAL)
+  if (type === "good" && status === "done") {
+    xp = XP_MAP[difficulty];
+  }
 
+  if (type === "bad" && status === "resisted") {
+    xp = XP_MAP[difficulty];
+  }
+
+  if (type === "bad" && status === "did") {
+    xp = -XP_MAP[difficulty]; // 🔥 NEGATIVE XP
+  }
+
+  // 3️⃣ Apply XP (positive OR negative)
+  if (xp !== 0) {
     await db.run(
       `
       INSERT INTO xp_logs (user_id, source, amount)
       VALUES (?, 'habit', ?)
       `,
-      [userId, xpGained]
+      [userId, xp]
     );
 
     await db.run(
@@ -69,19 +77,26 @@ export async function logHabitAction(userId, data) {
       SET total_xp = total_xp + ?
       WHERE id = ?
       `,
-      [xpGained, userId]
+      [xp, userId]
     );
   }
+
+  // 4️⃣ Fetch updated total XP
+  const user = await db.get(
+    `SELECT total_xp FROM users WHERE id = ?`,
+    [userId]
+  );
 
   return {
     habit_id,
     status,
-    xp: xpGained,
+    xp,
+    total_xp: user.total_xp,
   };
 }
 
 /**
- * Get today's habits with status
+ * Get today's habits (only unlogged)
  */
 export async function getTodayHabits(userId) {
   const date = getTodayDate();
@@ -93,15 +108,18 @@ export async function getTodayHabits(userId) {
       h.name,
       h.type,
       h.category,
-      h.difficulty,
-      l.status
+      h.difficulty
     FROM habits h
-    LEFT JOIN habit_logs l
-      ON h.id = l.habit_id AND l.date = ?
     WHERE h.user_id = ?
+      AND h.id NOT IN (
+        SELECT habit_id
+        FROM habit_logs
+        WHERE user_id = ?
+          AND date = ?
+      )
     ORDER BY h.created_at ASC
     `,
-    [date, userId]
+    [userId, userId, date]
   );
 
   return rows;

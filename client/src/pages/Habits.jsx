@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 import HabitItem from "../components/HabitItem";
 import AddHabitModal from "../components/AddHabitModal";
 import WeekView from "../components/WeekView";
@@ -9,13 +10,13 @@ import {
 } from "../services/habit.service";
 
 export default function Habits() {
+  const { user, updateXP } = useAuth();
+
   const [view, setView] = useState("day");
   const [showModal, setShowModal] = useState(false);
   const [habits, setHabits] = useState([]);
-  const [dailyXP, setDailyXP] = useState(0);
   const [xpFlash, setXpFlash] = useState(null);
 
-  /* FETCH TODAY HABITS */
   useEffect(() => {
     fetchHabits();
   }, []);
@@ -25,13 +26,11 @@ export default function Habits() {
     setHabits(data);
   };
 
-  /* ADD HABIT */
   const handleAddHabit = async (habit) => {
     await addHabit(habit);
     fetchHabits();
   };
 
-  /* LOG HABIT ACTION */
   const handleAction = async (habit, action) => {
     const res = await logHabit({
       habit_id: habit.id,
@@ -40,26 +39,25 @@ export default function Habits() {
       difficulty: habit.difficulty,
     });
 
-    if (res.xp > 0) {
-      setDailyXP((xp) => xp + res.xp);
-      setXpFlash(`+${res.xp} XP`);
+    // 🔥 GLOBAL XP UPDATE
+    if (res.xp !== 0) {
+      updateXP(res.total_xp);
+      setXpFlash(`${res.xp > 0 ? "+" : ""}${res.xp} XP`);
       setTimeout(() => setXpFlash(null), 800);
     }
 
-    fetchHabits();
+    // Remove habit from today view
+    setHabits((prev) => prev.filter((h) => h.id !== habit.id));
   };
 
   return (
     <div>
-      {/* Header */}
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-3xl font-bold text-neonPurple">
-          Habits
-        </h1>
+        <h1 className="text-3xl font-bold text-neonPurple">Habits</h1>
 
         <div className="flex gap-4 items-center">
           <span className="text-neonBlue font-semibold">
-            Today XP: {dailyXP}
+            Total XP: {user?.total_xp ?? 0}
           </span>
 
           <div className="flex gap-2">
@@ -80,14 +78,12 @@ export default function Habits() {
         </div>
       </div>
 
-      {/* XP Flash */}
       {xpFlash && (
         <div className="fixed top-20 right-10 text-green-400 text-xl font-bold animate-pulse">
           {xpFlash}
         </div>
       )}
 
-      {/* DAY VIEW */}
       {view === "day" && (
         <>
           <button
@@ -99,33 +95,21 @@ export default function Habits() {
 
           <div className="flex flex-col gap-4">
             {habits.length === 0 && (
-              <p className="text-gray-400">
-                No habits planned for today.
-              </p>
+              <p className="text-gray-400">No habits planned for today.</p>
             )}
 
             {habits.map((habit) => (
               <HabitItem
                 key={habit.id}
                 habit={habit}
-                onAction={(action) =>
-                  handleAction(habit, action)
-                }
+                onAction={(action) => handleAction(habit, action)}
               />
             ))}
           </div>
         </>
       )}
 
-      {view === "week" && (
-        <WeekView data={[]} />
-      )}
-
-      {view === "month" && (
-        <p className="text-gray-400">
-          Month view coming next.
-        </p>
-      )}
+      {view === "week" && <WeekView data={[]} />}
 
       {showModal && (
         <AddHabitModal
