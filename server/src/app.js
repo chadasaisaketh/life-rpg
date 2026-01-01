@@ -4,6 +4,9 @@ import dotenv from "dotenv";
 
 import authRoutes from "./modules/auth/auth.routes.js";
 import habitsRoutes from "./modules/habits/habits.routes.js";
+import routes from "./routes.js";
+
+
 
 dotenv.config();
 
@@ -15,4 +18,5 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/habits", habitsRoutes); // 🔥 THIS WAS MISSING
 
+app.use("/api", routes);
 export default app;
