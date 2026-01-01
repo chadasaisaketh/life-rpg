@@ -27,3 +27,13 @@ export const logHabit = async ({
   });
   return res.data; // { xp }
 };
+/**
+ * Get weekly habits with logs
+ */
+/* GET weekly habits grid */
+export const getWeekHabits = async (startDate) => {
+  const res = await api.get("/habits/week/habits", {
+    params: { start: startDate },
+  });
+  return res.data;
+};

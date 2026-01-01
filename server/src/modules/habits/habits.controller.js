@@ -1,7 +1,7 @@
 import * as habitsService from "./habits.service.js";
 
 /**
- * Create a habit (definition)
+ * Create a habit
  */
 export async function createHabit(req, res, next) {
   try {
@@ -16,7 +16,7 @@ export async function createHabit(req, res, next) {
 }
 
 /**
- * Log a habit action for today
+ * Log habit action
  */
 export async function logHabitAction(req, res, next) {
   try {
@@ -24,21 +24,14 @@ export async function logHabitAction(req, res, next) {
       req.user.id,
       req.body
     );
-
-    // 🔥 Explicit response (important for frontend sync)
-    res.json({
-      habit_id: result.habit_id,
-      status: result.status,
-      xp: result.xp,
-      total_xp: result.total_xp,
-    });
+    res.json(result);
   } catch (err) {
     next(err);
   }
 }
 
 /**
- * Get today's habits (unlogged only)
+ * Get today's habits
  */
 export async function getTodayHabits(req, res, next) {
   try {
@@ -46,6 +39,78 @@ export async function getTodayHabits(req, res, next) {
       req.user.id
     );
     res.json(habits);
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * Weekly habit grid (per habit, per day)
+ */
+export async function getWeekHabits(req, res, next) {
+  try {
+    const { start } = req.query;
+
+    if (!start) {
+      return res.status(400).json({
+        error: "start date (YYYY-MM-DD) required",
+      });
+    }
+
+    const data = await habitsService.getWeekHabits(
+      req.user.id,
+      start
+    );
+
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * Weekly category summary
+ */
+export async function getWeekCategorySummary(req, res, next) {
+  try {
+    const { start } = req.query;
+
+    if (!start) {
+      return res.status(400).json({
+        error: "start date (YYYY-MM-DD) required",
+      });
+    }
+
+    const data = await habitsService.getWeekCategorySummary(
+      req.user.id,
+      start
+    );
+
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * Monthly category summary
+ */
+export async function getMonthCategorySummary(req, res, next) {
+  try {
+    const { month } = req.query;
+
+    if (!month) {
+      return res.status(400).json({
+        error: "month (YYYY-MM) required",
+      });
+    }
+
+    const data = await habitsService.getMonthCategorySummary(
+      req.user.id,
+      month
+    );
+
+    res.json(data);
   } catch (err) {
     next(err);
   }
