@@ -44,16 +44,7 @@ export async function getActiveSkills(userId) {
 }
 
 /* GET COMPONENTS */
-export async function getSkillComponents(skillId) {
-  return await db.all(
-    `
-    SELECT *
-    FROM skill_components
-    WHERE skill_id = ?
-    `,
-    [skillId]
-  );
-}
+
 
 /* COMPLETE COMPONENT */
 export async function completeComponent(userId, componentId, skillId) {
@@ -129,7 +120,16 @@ export async function completeComponent(userId, componentId, skillId) {
     );
   }
 
-  return { xp: COMPONENT_XP };
+    const user = await db.get(
+  "SELECT total_xp FROM users WHERE id = ?",
+  [userId]
+);
+
+return {
+  xp: COMPONENT_XP,
+  total_xp: user.total_xp,
+};
+
 }
 
 /* COMPLETED SKILLS (KNOWLEDGE BASE) */
@@ -148,5 +148,16 @@ export async function getCompletedSkills(userId) {
     WHERE user_id = ? AND is_completed = 1
     `,
     [userId]
+  );
+}
+
+export async function getSkillComponents(skillId) {
+  return await db.all(
+    `
+    SELECT *
+    FROM skill_components
+    WHERE skill_id = ?
+    `,
+    [skillId]
   );
 }

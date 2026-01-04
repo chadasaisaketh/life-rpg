@@ -23,4 +23,17 @@ export async function completeComponent(req, res, next) {
   res.json(
     await service.completeComponent(req.user.id, componentId, skillId)
   );
+
+  
 }
+export async function getSkillComponents(req, res, next) {
+  try {
+    const components = await service.getSkillComponents(
+      req.params.skillId
+    );
+    res.json(components);
+  } catch (err) {
+    next(err);
+  }
+}
+
