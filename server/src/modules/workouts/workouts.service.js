@@ -62,7 +62,13 @@ export async function getWeeklyWorkouts(userId) {
 export async function getWeeklyMuscleHeatmap(userId) {
   return await db.all(
     `
-    SELECT wm.muscle, COUNT(*) as intensity
+    SELECT
+      wm.muscle,
+      COUNT(*) AS intensity,
+      CASE
+        WHEN COUNT(*) >= 4 THEN 1
+        ELSE 0
+      END AS overtrained
     FROM workout_muscles wm
     JOIN workouts w ON w.id = wm.workout_id
     WHERE w.user_id = ?
@@ -72,3 +78,4 @@ export async function getWeeklyMuscleHeatmap(userId) {
     [userId]
   );
 }
+
