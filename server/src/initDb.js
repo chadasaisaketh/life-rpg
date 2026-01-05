@@ -83,6 +83,21 @@ CREATE TABLE IF NOT EXISTS skill_components (
   completed_at TEXT,
   FOREIGN KEY(skill_id) REFERENCES skills(id)
 );
+CREATE TABLE IF NOT EXISTS workouts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER,
+  type TEXT, -- gym, run, walk, yoga
+  duration_minutes INTEGER,
+  distance_km REAL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(user_id) REFERENCES users(id)
+);
+CREATE TABLE IF NOT EXISTS workout_muscles (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  workout_id INTEGER,
+  muscle TEXT,
+  FOREIGN KEY(workout_id) REFERENCES workouts(id)
+);
 
 
 

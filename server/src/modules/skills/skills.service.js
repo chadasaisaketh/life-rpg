@@ -50,6 +50,7 @@ export async function getActiveSkills(userId) {
 export async function completeComponent(userId, componentId, skillId) {
   const today = getTodayDate();
 
+  // Mark component complete
   await db.run(
     `
     UPDATE skill_components
@@ -68,7 +69,10 @@ export async function completeComponent(userId, componentId, skillId) {
     [skillId]
   );
 
-  // XP for component
+  const COMPONENT_XP = 20;
+  let totalXpAdded = COMPONENT_XP;
+
+  // Component XP
   await db.run(
     `
     INSERT INTO xp_logs (user_id, source, amount)
@@ -86,13 +90,16 @@ export async function completeComponent(userId, componentId, skillId) {
     [COMPONENT_XP, userId]
   );
 
-  // Check if skill completed
+  // Check skill completion
   const skill = await db.get(
     `SELECT * FROM skills WHERE id = ?`,
     [skillId]
   );
 
   if (skill.completed_components === skill.total_components) {
+    const BONUS_XP = 100;
+    totalXpAdded += BONUS_XP;
+
     await db.run(
       `
       UPDATE skills
@@ -107,7 +114,7 @@ export async function completeComponent(userId, componentId, skillId) {
       INSERT INTO xp_logs (user_id, source, amount)
       VALUES (?, 'learning_complete', ?)
       `,
-      [userId, SKILL_BONUS_XP]
+      [userId, BONUS_XP]
     );
 
     await db.run(
@@ -116,21 +123,21 @@ export async function completeComponent(userId, componentId, skillId) {
       SET total_xp = total_xp + ?
       WHERE id = ?
       `,
-      [SKILL_BONUS_XP, userId]
+      [BONUS_XP, userId]
     );
   }
 
-    const user = await db.get(
-  "SELECT total_xp FROM users WHERE id = ?",
-  [userId]
-);
+  const user = await db.get(
+    `SELECT total_xp FROM users WHERE id = ?`,
+    [userId]
+  );
 
-return {
-  xp: COMPONENT_XP,
-  total_xp: user.total_xp,
-};
-
+  return {
+    xp: totalXpAdded,
+    total_xp: user.total_xp,
+  };
 }
+
 
 /* COMPLETED SKILLS (KNOWLEDGE BASE) */
 export async function getCompletedSkills(userId) {

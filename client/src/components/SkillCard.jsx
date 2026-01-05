@@ -5,6 +5,7 @@ import {
 } from "../services/skills.service";
 import { useAuth } from "../context/AuthContext";
 
+
 export default function SkillCard({ skill, onUpdated }) {
   const [components, setComponents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,6 +21,22 @@ export default function SkillCard({ skill, onUpdated }) {
     setComponents(data);
     setLoading(false);
   };
+  const handleComplete = async (componentId) => {
+  const res = await completeComponent({
+    componentId,
+    skillId: skill.id,
+  });
+
+  if (res?.total_xp !== undefined) {
+    updateXP(res.total_xp);
+  }
+
+  loadComponents();
+
+  if (onUpdated) {
+    onUpdated();
+  }
+};
 
   const handleCheck = async (component) => {
     if (component.is_completed) return;
