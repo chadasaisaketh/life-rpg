@@ -32,3 +32,7 @@ export async function getTodaySummary(req, res, next) {
     next(e);
   }
 }
+export async function getWeekSummary(req, res) {
+  const { start } = req.query;
+  res.json(await service.getWeekSummary(req.user.id, start));
+}

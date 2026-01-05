@@ -4,13 +4,16 @@ import {
   saveTargets,
   getTodaySummary,
   addMeal,
+  getWeekSummary,
 } from "../services/nutrition.service";
 import AddMealModal from "../components/AddMealModal";
-import ProgressRing from "../components/ProgressRing";
+import NutritionHeatmap from "../components/NutritionHeatmap";
+import { startOfWeek, format } from "date-fns";
 
 /* ---------------- TARGET FIELDS ---------------- */
 
 const TARGET_FIELDS = [
+  // Macros
   { key: "calories", label: "Calories (kcal)" },
   { key: "protein", label: "Protein (g)" },
   { key: "carbs", label: "Carbs (g)" },
@@ -45,11 +48,13 @@ const TARGET_FIELDS = [
 export default function Nutrition() {
   const [targets, setTargets] = useState({});
   const [summary, setSummary] = useState({});
+  const [weekData, setWeekData] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showMealModal, setShowMealModal] = useState(false);
 
-  /* ---------------- LOAD DATA ---------------- */
+  /* ---------------- LOAD ALL DATA ---------------- */
 
   useEffect(() => {
     loadAll();
@@ -58,8 +63,16 @@ export default function Nutrition() {
   const loadAll = async () => {
     const t = await getTargets();
     const s = await getTodaySummary();
+
+    const weekStart = format(
+      startOfWeek(new Date(), { weekStartsOn: 1 }),
+      "yyyy-MM-dd"
+    );
+    const w = await getWeekSummary(weekStart);
+
     setTargets(t || {});
     setSummary(s || {});
+    setWeekData(w || []);
     setLoading(false);
   };
 
@@ -83,7 +96,14 @@ export default function Nutrition() {
   const handleAddMeal = async (mealData) => {
     await addMeal(mealData);
     const s = await getTodaySummary();
+    const weekStart = format(
+      startOfWeek(new Date(), { weekStartsOn: 1 }),
+      "yyyy-MM-dd"
+    );
+    const w = await getWeekSummary(weekStart);
+
     setSummary(s || {});
+    setWeekData(w || []);
   };
 
   if (loading) {
@@ -93,7 +113,7 @@ export default function Nutrition() {
   /* ---------------- UI ---------------- */
 
   return (
-    <div className="max-w-5xl">
+    <div className="max-w-6xl">
       {/* HEADER */}
       <h1 className="text-3xl font-bold text-neonPurple mb-6">
         Nutrition
@@ -136,7 +156,7 @@ export default function Nutrition() {
         Today’s Intake
       </h2>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {["calories", "protein", "carbs", "fats"].map((k) => (
           <div
             key={k}
@@ -152,45 +172,25 @@ export default function Nutrition() {
         ))}
       </div>
 
-      {/* PROGRESS RINGS */}
-      <h2 className="text-xl mb-4 text-neonPurple">
-        Macro Progress
+      {/* WEEKLY HEATMAP */}
+      <h2 className="text-xl mt-10 mb-3 text-neonPurple">
+        Weekly Nutrition Heatmap
       </h2>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
-        <ProgressRing
-          label="Calories"
-          value={summary?.calories ?? 0}
-          target={targets?.calories ?? 0}
-          unit="kcal"
-        />
-        <ProgressRing
-          label="Protein"
-          value={summary?.protein ?? 0}
-          target={targets?.protein ?? 0}
-          unit="g"
-        />
-        <ProgressRing
-          label="Carbs"
-          value={summary?.carbs ?? 0}
-          target={targets?.carbs ?? 0}
-          unit="g"
-        />
-        <ProgressRing
-          label="Fats"
-          value={summary?.fats ?? 0}
-          target={targets?.fats ?? 0}
-          unit="g"
-        />
-      </div>
+      <NutritionHeatmap
+        data={weekData}
+        targets={targets}
+      />
 
       {/* ADD MEAL */}
-      <button
-        onClick={() => setShowMealModal(true)}
-        className="px-4 py-2 bg-neonPurple text-black rounded"
-      >
-        + Add Meal
-      </button>
+      <div className="mt-8">
+        <button
+          onClick={() => setShowMealModal(true)}
+          className="px-4 py-2 bg-neonPurple text-black rounded"
+        >
+          + Add Meal
+        </button>
+      </div>
 
       {showMealModal && (
         <AddMealModal

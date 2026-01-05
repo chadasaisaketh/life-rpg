@@ -19,3 +19,7 @@ export const addMeal = async (data) => {
   const res = await api.post("/nutrition/meal", data);
   return res.data;
 };
+export const getWeekSummary = async (startDate) => {
+  const res = await api.get(`/nutrition/week?start=${startDate}`);
+  return res.data;
+};

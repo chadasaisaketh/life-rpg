@@ -5,6 +5,7 @@ import {
   saveTargets,
   addMeal,
   getTodaySummary,
+  getWeekSummary,
 } from "./nutrition.controller.js";
 
 const router = express.Router();
@@ -14,5 +15,6 @@ router.post("/targets", auth, saveTargets);
 
 router.post("/meal", auth, addMeal);
 router.get("/today", auth, getTodaySummary);
+router.get("/week", auth, getWeekSummary);
 
 export default router;

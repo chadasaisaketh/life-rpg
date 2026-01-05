@@ -111,3 +111,21 @@ export async function getTodaySummary(userId) {
     [userId, date]
   );
 }
+export async function getWeekSummary(userId, startDate) {
+  return await db.all(
+    `
+    SELECT
+      date,
+      SUM(calories) calories,
+      SUM(protein) protein,
+      SUM(carbs) carbs,
+      SUM(fats) fats
+    FROM nutrition_logs
+    WHERE user_id = ?
+      AND date >= ?
+    GROUP BY date
+    ORDER BY date
+    `,
+    [userId, startDate]
+  );
+}
