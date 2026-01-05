@@ -25,3 +25,19 @@ export async function getMuscleHeatmap(req, res, next) {
     next(err);
   }
 }
+export async function getAvatarStats(req, res, next) {
+  try {
+    const stats = await service.getAvatarStats(req.user.id);
+    res.json(stats);
+  } catch (err) {
+    next(err);
+  }
+}
+export async function getMuscleBalance(req, res, next) {
+  try {
+    const data = await service.getMuscleBalance(req.user.id);
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+}

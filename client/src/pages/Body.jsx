@@ -4,8 +4,13 @@ import {
   addWorkout,
   getWeeklyWorkouts,
   getMuscleHeatmap,
+  getAvatarStats,
+  getMuscleBalance,
 } from "../services/workouts.service";
+
 import MuscleMap from "../components/MuscleMap";
+import AvatarStats from "../components/AvatarStats";
+import MuscleBalance from "../components/MuscleBalance";
 
 const MUSCLE_OPTIONS = [
   "chest",
@@ -23,6 +28,8 @@ export default function Body() {
 
   const [week, setWeek] = useState([]);
   const [muscles, setMuscles] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [balance, setBalance] = useState(null);
 
   const [form, setForm] = useState({
     type: "gym",
@@ -31,7 +38,7 @@ export default function Body() {
     muscles: [],
   });
 
-  /* ---------------- LOAD DATA ---------------- */
+  /* ---------------- LOAD ALL DATA ---------------- */
 
   useEffect(() => {
     loadAll();
@@ -40,6 +47,8 @@ export default function Body() {
   const loadAll = async () => {
     setWeek(await getWeeklyWorkouts());
     setMuscles(await getMuscleHeatmap());
+    setStats(await getAvatarStats());
+    setBalance(await getMuscleBalance());
   };
 
   /* ---------------- MUSCLE TOGGLE ---------------- */
@@ -88,8 +97,20 @@ export default function Body() {
         Body
       </h1>
 
+      {/* AVATAR STATS */}
+      <h2 className="text-xl mb-3 text-neonPurple">
+        Avatar Stats
+      </h2>
+      {stats && <AvatarStats stats={stats} />}
+
+      {/* MUSCLE BALANCE */}
+      <h2 className="text-xl mt-6 mb-3 text-neonPurple">
+        Muscle Balance
+      </h2>
+      {balance && <MuscleBalance data={balance} />}
+
       {/* LOG WORKOUT */}
-      <div className="p-4 mb-8 bg-black/40 rounded-xl border border-white/10">
+      <div className="p-4 my-8 bg-black/40 rounded-xl border border-white/10">
         <h2 className="text-lg mb-4 text-neonBlue">
           Log Workout
         </h2>
