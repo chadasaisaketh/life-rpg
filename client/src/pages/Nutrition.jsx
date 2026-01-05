@@ -6,6 +6,7 @@ import {
   addMeal,
 } from "../services/nutrition.service";
 import AddMealModal from "../components/AddMealModal";
+import ProgressRing from "../components/ProgressRing";
 
 /* ---------------- TARGET FIELDS ---------------- */
 
@@ -135,7 +136,7 @@ export default function Nutrition() {
         Today’s Intake
       </h2>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {["calories", "protein", "carbs", "fats"].map((k) => (
           <div
             key={k}
@@ -149,6 +150,38 @@ export default function Nutrition() {
             </p>
           </div>
         ))}
+      </div>
+
+      {/* PROGRESS RINGS */}
+      <h2 className="text-xl mb-4 text-neonPurple">
+        Macro Progress
+      </h2>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+        <ProgressRing
+          label="Calories"
+          value={summary?.calories ?? 0}
+          target={targets?.calories ?? 0}
+          unit="kcal"
+        />
+        <ProgressRing
+          label="Protein"
+          value={summary?.protein ?? 0}
+          target={targets?.protein ?? 0}
+          unit="g"
+        />
+        <ProgressRing
+          label="Carbs"
+          value={summary?.carbs ?? 0}
+          target={targets?.carbs ?? 0}
+          unit="g"
+        />
+        <ProgressRing
+          label="Fats"
+          value={summary?.fats ?? 0}
+          target={targets?.fats ?? 0}
+          unit="g"
+        />
       </div>
 
       {/* ADD MEAL */}
