@@ -98,7 +98,90 @@ CREATE TABLE IF NOT EXISTS workout_muscles (
   muscle TEXT,
   FOREIGN KEY(workout_id) REFERENCES workouts(id)
 );
+CREATE TABLE IF NOT EXISTS nutrition_targets (
+  user_id INTEGER PRIMARY KEY,
 
+  /* MACROS */
+  calories INTEGER,
+  protein REAL,
+  carbs REAL,
+  fats REAL,
+  fiber REAL,
+
+  /* SUGARS & SALTS */
+  sugar REAL,
+  sodium REAL,
+  potassium REAL,
+
+  /* VITAMINS */
+  vitamin_a REAL,
+  vitamin_b1 REAL,
+  vitamin_b2 REAL,
+  vitamin_b3 REAL,
+  vitamin_b6 REAL,
+  vitamin_b12 REAL,
+  vitamin_c REAL,
+  vitamin_d REAL,
+  vitamin_e REAL,
+  vitamin_k REAL,
+  folate REAL,
+
+  /* MINERALS */
+  calcium REAL,
+  iron REAL,
+  magnesium REAL,
+  zinc REAL,
+  phosphorus REAL,
+  selenium REAL,
+
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS nutrition_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER,
+
+  meal TEXT, -- Breakfast, Lunch, Snack, Dinner, Custom
+
+  /* MACROS */
+  calories INTEGER,
+  protein REAL,
+  carbs REAL,
+  fats REAL,
+  fiber REAL,
+
+  /* SUGARS & SALTS */
+  sugar REAL,
+  sodium REAL,
+  potassium REAL,
+
+  /* VITAMINS */
+  vitamin_a REAL,
+  vitamin_b1 REAL,
+  vitamin_b2 REAL,
+  vitamin_b3 REAL,
+  vitamin_b6 REAL,
+  vitamin_b12 REAL,
+  vitamin_c REAL,
+  vitamin_d REAL,
+  vitamin_e REAL,
+  vitamin_k REAL,
+  folate REAL,
+
+  /* MINERALS */
+  calcium REAL,
+  iron REAL,
+  magnesium REAL,
+  zinc REAL,
+  phosphorus REAL,
+  selenium REAL,
+
+  date TEXT, -- YYYY-MM-DD
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+  FOREIGN KEY (user_id) REFERENCES users(id)
+);
 
 
 

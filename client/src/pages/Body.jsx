@@ -24,12 +24,13 @@ const MUSCLE_OPTIONS = [
 ];
 
 export default function Body() {
-  const { updateXP } = useAuth();
+  const { user, updateXP } = useAuth(); // 👈 READ XP + UPDATE XP
 
   const [week, setWeek] = useState([]);
   const [muscles, setMuscles] = useState([]);
   const [stats, setStats] = useState(null);
   const [balance, setBalance] = useState(null);
+  const [xpFlash, setXpFlash] = useState(null); // 👈 XP FLASH
 
   const [form, setForm] = useState({
     type: "gym",
@@ -76,7 +77,10 @@ export default function Body() {
       muscles: form.muscles,
     });
 
+    // 🔥 XP UPDATE
     updateXP(res.xp);
+    setXpFlash(`+${res.xp} XP`);
+    setTimeout(() => setXpFlash(null), 800);
 
     setForm({
       type: "gym",
@@ -93,9 +97,21 @@ export default function Body() {
   return (
     <div>
       {/* HEADER */}
-      <h1 className="text-3xl font-bold text-neonPurple mb-6">
+      <h1 className="text-3xl font-bold text-neonPurple mb-2">
         Body
       </h1>
+
+      {/* TOTAL XP */}
+      <p className="text-neonBlue font-semibold mb-6">
+        Total XP: {user?.total_xp ?? 0}
+      </p>
+
+      {/* XP FLASH */}
+      {xpFlash && (
+        <div className="fixed top-20 right-10 text-green-400 text-xl font-bold animate-pulse">
+          {xpFlash}
+        </div>
+      )}
 
       {/* AVATAR STATS */}
       <h2 className="text-xl mb-3 text-neonPurple">
