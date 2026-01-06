@@ -129,3 +129,82 @@ export async function getWeekSummary(userId, startDate) {
     [userId, startDate]
   );
 }
+export async function awardNutritionXP(userId) {
+  const date = getTodayDate();
+
+  // prevent double-award
+  const already = await db.get(
+    `
+    SELECT 1 FROM xp_logs
+    WHERE user_id = ?
+      AND source = 'nutrition'
+      AND DATE(created_at) = ?
+    `,
+    [userId, date]
+  );
+
+  if (already) return { xp: 0 };
+
+  const targets = await getTargets(userId);
+  const intake = await getTodaySummary(userId);
+
+  if (!targets || !intake) return { xp: 0 };
+
+  let xp = 0;
+
+  /* ---------- MACROS ---------- */
+  const macros = ["calories", "protein", "carbs", "fats"];
+  const macrosHit = macros.every((k) =>
+    targets[k] &&
+    intake[k] &&
+    intake[k] >= targets[k] * 0.9 &&
+    intake[k] <= targets[k] * 1.1
+  );
+
+  if (macrosHit) xp += 25;
+
+  /* ---------- VITAMINS ---------- */
+  const vitamins = [
+    "vitamin_a","vitamin_b1","vitamin_b2","vitamin_b3",
+    "vitamin_b6","vitamin_b12","vitamin_c",
+    "vitamin_d","vitamin_e","vitamin_k","folate",
+  ];
+
+  const vitaminsHit = vitamins.every((k) =>
+    targets[k] && intake[k] && intake[k] >= targets[k] * 0.9
+  );
+
+  if (vitaminsHit) xp += 50;
+
+  /* ---------- MINERALS ---------- */
+  const minerals = [
+    "calcium","iron","magnesium","zinc",
+    "phosphorus","selenium","sodium","potassium",
+  ];
+
+  const mineralsHit = minerals.every((k) =>
+    targets[k] && intake[k] && intake[k] >= targets[k] * 0.9
+  );
+
+  if (mineralsHit) xp += 25;
+
+  /* ---------- PERFECT DAY ---------- */
+  if (macrosHit && vitaminsHit && mineralsHit) {
+    xp += 50;
+  }
+
+  if (xp > 0) {
+    await db.run(
+      `INSERT INTO xp_logs (user_id, source, amount)
+       VALUES (?, 'nutrition', ?)`,
+      [userId, xp]
+    );
+
+    await db.run(
+      `UPDATE users SET total_xp = total_xp + ? WHERE id = ?`,
+      [xp, userId]
+    );
+  }
+
+  return { xp };
+}

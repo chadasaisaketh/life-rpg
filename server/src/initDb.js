@@ -183,6 +183,16 @@ CREATE TABLE IF NOT EXISTS nutrition_logs (
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
+CREATE TABLE IF NOT EXISTS spiritual_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER,
+  type TEXT CHECK(type IN ('meditation','yoga','chanting','silence')),
+  duration_minutes INTEGER,
+  count INTEGER,
+  date TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(user_id) REFERENCES users(id)
+);
 
 
   `);

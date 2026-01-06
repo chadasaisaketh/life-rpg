@@ -1,60 +1,82 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 import {
   getTargets,
   saveTargets,
   getTodaySummary,
   addMeal,
-  getWeekSummary,
 } from "../services/nutrition.service";
 import AddMealModal from "../components/AddMealModal";
-import NutritionHeatmap from "../components/NutritionHeatmap";
-import { startOfWeek, format } from "date-fns";
+import ProgressRing from "../components/ProgressRing";
 
-/* ---------------- TARGET FIELDS ---------------- */
+/* ---------------- FIELD GROUPS ---------------- */
 
-const TARGET_FIELDS = [
-  // Macros
-  { key: "calories", label: "Calories (kcal)" },
-  { key: "protein", label: "Protein (g)" },
-  { key: "carbs", label: "Carbs (g)" },
-  { key: "fats", label: "Fats (g)" },
-  { key: "fiber", label: "Fiber (g)" },
-  { key: "sugar", label: "Sugar (g)" },
-  { key: "sodium", label: "Sodium (mg)" },
-  { key: "potassium", label: "Potassium (mg)" },
+const MACROS = ["calories", "protein", "carbs", "fats"];
 
-  // Vitamins
-  { key: "vitamin_a", label: "Vitamin A (µg)" },
-  { key: "vitamin_b1", label: "Vitamin B1 (mg)" },
-  { key: "vitamin_b2", label: "Vitamin B2 (mg)" },
-  { key: "vitamin_b3", label: "Vitamin B3 (mg)" },
-  { key: "vitamin_b6", label: "Vitamin B6 (mg)" },
-  { key: "vitamin_b12", label: "Vitamin B12 (µg)" },
-  { key: "vitamin_c", label: "Vitamin C (mg)" },
-  { key: "vitamin_d", label: "Vitamin D (IU)" },
-  { key: "vitamin_e", label: "Vitamin E (mg)" },
-  { key: "vitamin_k", label: "Vitamin K (µg)" },
-  { key: "folate", label: "Folate (µg)" },
-
-  // Minerals
-  { key: "calcium", label: "Calcium (mg)" },
-  { key: "iron", label: "Iron (mg)" },
-  { key: "magnesium", label: "Magnesium (mg)" },
-  { key: "zinc", label: "Zinc (mg)" },
-  { key: "phosphorus", label: "Phosphorus (mg)" },
-  { key: "selenium", label: "Selenium (µg)" },
+const VITAMINS = [
+  "vitamin_a",
+  "vitamin_b1",
+  "vitamin_b2",
+  "vitamin_b3",
+  "vitamin_b6",
+  "vitamin_b12",
+  "vitamin_c",
+  "vitamin_d",
+  "vitamin_e",
+  "vitamin_k",
+  "folate",
 ];
 
+const MINERALS = [
+  "calcium",
+  "iron",
+  "magnesium",
+  "zinc",
+  "phosphorus",
+  "selenium",
+  "sodium",
+  "potassium",
+];
+
+const LABELS = {
+  calories: "Calories",
+  protein: "Protein",
+  carbs: "Carbs",
+  fats: "Fats",
+
+  vitamin_a: "Vitamin A",
+  vitamin_b1: "Vitamin B1",
+  vitamin_b2: "Vitamin B2",
+  vitamin_b3: "Vitamin B3",
+  vitamin_b6: "Vitamin B6",
+  vitamin_b12: "Vitamin B12",
+  vitamin_c: "Vitamin C",
+  vitamin_d: "Vitamin D",
+  vitamin_e: "Vitamin E",
+  vitamin_k: "Vitamin K",
+  folate: "Folate",
+
+  calcium: "Calcium",
+  iron: "Iron",
+  magnesium: "Magnesium",
+  zinc: "Zinc",
+  phosphorus: "Phosphorus",
+  selenium: "Selenium",
+  sodium: "Sodium",
+  potassium: "Potassium",
+};
+
 export default function Nutrition() {
+  const { user, updateXP } = useAuth();
+
   const [targets, setTargets] = useState({});
   const [summary, setSummary] = useState({});
-  const [weekData, setWeekData] = useState([]);
-
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showMealModal, setShowMealModal] = useState(false);
+  const [xpFlash, setXpFlash] = useState(null);
 
-  /* ---------------- LOAD ALL DATA ---------------- */
+  /* ---------------- LOAD DATA ---------------- */
 
   useEffect(() => {
     loadAll();
@@ -63,16 +85,8 @@ export default function Nutrition() {
   const loadAll = async () => {
     const t = await getTargets();
     const s = await getTodaySummary();
-
-    const weekStart = format(
-      startOfWeek(new Date(), { weekStartsOn: 1 }),
-      "yyyy-MM-dd"
-    );
-    const w = await getWeekSummary(weekStart);
-
     setTargets(t || {});
     setSummary(s || {});
-    setWeekData(w || []);
     setLoading(false);
   };
 
@@ -91,106 +105,108 @@ export default function Nutrition() {
     setSaving(false);
   };
 
-  /* ---------------- MEAL HANDLERS ---------------- */
+  /* ---------------- MEAL HANDLER ---------------- */
 
   const handleAddMeal = async (mealData) => {
-    await addMeal(mealData);
-    const s = await getTodaySummary();
-    const weekStart = format(
-      startOfWeek(new Date(), { weekStartsOn: 1 }),
-      "yyyy-MM-dd"
-    );
-    const w = await getWeekSummary(weekStart);
+    const res = await addMeal(mealData);
 
+    const s = await getTodaySummary();
     setSummary(s || {});
-    setWeekData(w || []);
+
+    if (res?.xp > 0) {
+      updateXP(res.xp);
+      setXpFlash(`+${res.xp} XP`);
+      setTimeout(() => setXpFlash(null), 1200);
+    }
   };
 
   if (loading) {
     return <p className="text-gray-400">Loading nutrition…</p>;
   }
 
-  /* ---------------- UI ---------------- */
-
   return (
     <div className="max-w-6xl">
       {/* HEADER */}
-      <h1 className="text-3xl font-bold text-neonPurple mb-6">
-        Nutrition
-      </h1>
-
-      {/* TARGETS */}
-      <h2 className="text-xl text-neonBlue mb-2">
-        Daily Targets
-      </h2>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        {TARGET_FIELDS.map((field) => (
-          <div key={field.key}>
-            <label className="block text-sm text-gray-400 mb-1">
-              {field.label}
-            </label>
-            <input
-              type="number"
-              value={targets[field.key] ?? ""}
-              onChange={(e) =>
-                handleChange(field.key, e.target.value)
-              }
-              className="w-full px-3 py-2 rounded bg-black/50 border border-white/10
-                         focus:outline-none focus:border-neonBlue text-white"
-            />
-          </div>
-        ))}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-neonPurple">
+          Nutrition
+        </h1>
+        <span className="text-neonBlue font-semibold">
+          Total XP: {user?.total_xp ?? 0}
+        </span>
       </div>
 
-      <button
-        onClick={handleSave}
-        disabled={saving}
-        className="px-6 py-3 bg-neonBlue text-black font-semibold rounded-lg"
-      >
-        {saving ? "Saving…" : "Save Targets"}
-      </button>
+      {/* XP FLASH */}
+      {xpFlash && (
+        <div className="fixed top-20 right-10 text-green-400 text-xl font-bold animate-pulse">
+          {xpFlash}
+        </div>
+      )}
 
-      {/* TODAY SUMMARY */}
-      <h2 className="text-xl mt-10 mb-3 text-neonGreen">
-        Today’s Intake
-      </h2>
+      {/* MACROS */}
+      <Section title="Macros (Today)">
+        <RingGrid
+          fields={MACROS}
+          targets={targets}
+          summary={summary}
+        />
+      </Section>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        {["calories", "protein", "carbs", "fats"].map((k) => (
-          <div
-            key={k}
-            className="p-4 bg-black/40 rounded-xl border border-white/10"
-          >
-            <p className="text-sm text-gray-400">
-              {k.toUpperCase()}
-            </p>
-            <p className="text-lg font-semibold text-white">
-              {summary?.[k] ?? 0}
-            </p>
-          </div>
-        ))}
-      </div>
+      {/* VITAMINS */}
+      <Section title="Vitamins (Today)">
+        <RingGrid
+          fields={VITAMINS}
+          targets={targets}
+          summary={summary}
+        />
+      </Section>
 
-      {/* WEEKLY HEATMAP */}
-      <h2 className="text-xl mt-10 mb-3 text-neonPurple">
-        Weekly Nutrition Heatmap
-      </h2>
+      {/* MINERALS */}
+      <Section title="Minerals (Today)">
+        <RingGrid
+          fields={MINERALS}
+          targets={targets}
+          summary={summary}
+        />
+      </Section>
 
-      <NutritionHeatmap
-        data={weekData}
-        targets={targets}
-      />
+      {/* TARGET SETTINGS */}
+      <Section title="Daily Targets">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {Object.keys(LABELS).map((key) => (
+            <div key={key}>
+              <label className="block text-sm text-gray-400 mb-1">
+                {LABELS[key]}
+              </label>
+              <input
+                type="number"
+                value={targets[key] ?? ""}
+                onChange={(e) =>
+                  handleChange(key, e.target.value)
+                }
+                className="w-full px-3 py-2 rounded bg-black/50 border border-white/10
+                           focus:outline-none focus:border-neonBlue text-white"
+              />
+            </div>
+          ))}
+        </div>
+
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="mt-6 px-6 py-3 bg-neonBlue text-black font-semibold rounded-lg"
+        >
+          {saving ? "Saving…" : "Save Targets"}
+        </button>
+      </Section>
 
       {/* ADD MEAL */}
-      <div className="mt-8">
-        <button
-          onClick={() => setShowMealModal(true)}
-          className="px-4 py-2 bg-neonPurple text-black rounded"
-        >
-          + Add Meal
-        </button>
-      </div>
+      <button
+        onClick={() => setShowMealModal(true)}
+        className="mt-10 px-4 py-2 bg-neonPurple text-black rounded"
+      >
+        + Add Meal
+      </button>
 
       {showMealModal && (
         <AddMealModal
@@ -198,6 +214,34 @@ export default function Nutrition() {
           onAdd={handleAddMeal}
         />
       )}
+    </div>
+  );
+}
+
+/* ---------------- REUSABLE UI ---------------- */
+
+function Section({ title, children }) {
+  return (
+    <div className="mb-10">
+      <h2 className="text-xl mb-4 text-neonGreen">
+        {title}
+      </h2>
+      {children}
+    </div>
+  );
+}
+
+function RingGrid({ fields, targets, summary }) {
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      {fields.map((key) => (
+        <ProgressRing
+          key={key}
+          label={LABELS[key]}
+          value={summary[key] ?? 0}
+          target={targets[key] ?? 0}
+        />
+      ))}
     </div>
   );
 }

@@ -16,14 +16,14 @@ export async function saveTargets(req, res, next) {
   }
 }
 
-export async function addMeal(req, res, next) {
-  try {
-    await service.addMeal(req.user.id, req.body);
-    res.json({ success: true });
-  } catch (e) {
-    next(e);
-  }
+export async function addMeal(req, res) {
+  await service.addMeal(req.user.id, req.body);
+
+  const xpResult = await awardNutritionXP(req.user.id);
+
+  res.json({ success: true, xp: xpResult.xp });
 }
+
 
 export async function getTodaySummary(req, res, next) {
   try {
