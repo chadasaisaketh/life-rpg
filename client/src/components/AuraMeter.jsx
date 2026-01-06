@@ -1,31 +1,40 @@
-export default function AuraMeter({ value }) {
-  const glow =
-    value >= 80
-      ? "shadow-[0_0_40px_#a855f7]"
-      : value >= 50
-      ? "shadow-[0_0_25px_#22d3ee]"
-      : "shadow-[0_0_15px_#64748b]";
+export default function AuraMeter({ streak }) {
+  let label = "Dormant";
+  let color = "bg-gray-500";
+  let glow = "";
 
-  const color =
-    value >= 80
-      ? "from-purple-500 to-pink-500"
-      : value >= 50
-      ? "from-cyan-400 to-blue-500"
-      : "from-gray-500 to-gray-700";
+  if (streak >= 30) {
+    label = "Transcendent";
+    color = "bg-yellow-400";
+    glow = "shadow-[0_0_40px_10px_rgba(255,215,0,0.6)]";
+  } else if (streak >= 14) {
+    label = "Radiant";
+    color = "bg-purple-500";
+    glow = "shadow-[0_0_30px_8px_rgba(168,85,247,0.6)]";
+  } else if (streak >= 7) {
+    label = "Strong";
+    color = "bg-green-400";
+    glow = "shadow-[0_0_25px_6px_rgba(34,197,94,0.6)]";
+  } else if (streak >= 3) {
+    label = "Stable";
+    color = "bg-blue-400";
+    glow = "shadow-[0_0_20px_4px_rgba(59,130,246,0.6)]";
+  }
 
   return (
-    <div className="flex flex-col items-center mb-6">
+    <div className="flex items-center gap-6 mb-6">
       <div
-        className={`w-40 h-40 rounded-full flex items-center justify-center
-        bg-gradient-to-br ${color} ${glow} transition-all`}
-      >
-        <span className="text-3xl font-bold text-black">
-          {value}
-        </span>
+        className={`w-24 h-24 rounded-full ${color} ${glow} transition-all`}
+      />
+      <div>
+        <p className="text-gray-400 text-sm">Aura Level</p>
+        <p className="text-xl font-bold text-white">
+          {label}
+        </p>
+        <p className="text-sm text-gray-400">
+          Streak: {streak} days
+        </p>
       </div>
-      <p className="mt-2 text-gray-400 text-sm">
-        Aura Level
-      </p>
     </div>
   );
 }

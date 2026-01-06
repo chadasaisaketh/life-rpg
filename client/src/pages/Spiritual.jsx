@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
+import AuraMeter from "../components/AuraMeter";
 
 const PRACTICES = [
   { type: "meditation", label: "Meditation (min)" },
@@ -11,6 +12,7 @@ const PRACTICES = [
 
 export default function Spiritual() {
   const { user, updateXP } = useAuth();
+
   const [form, setForm] = useState({
     type: "meditation",
     value: "",
@@ -19,14 +21,21 @@ export default function Spiritual() {
   const [streak, setStreak] = useState(0);
   const [xpFlash, setXpFlash] = useState(null);
 
+  /* ---------------- LOAD DATA ---------------- */
+
   useEffect(() => {
     load();
   }, []);
 
   const load = async () => {
-    setToday((await api.get("/spiritual/today")).data);
-    setStreak((await api.get("/spiritual/streak")).data.streak);
+    const todayRes = await api.get("/spiritual/today");
+    const streakRes = await api.get("/spiritual/streak");
+
+    setToday(todayRes.data);
+    setStreak(streakRes.data.streak);
   };
+
+  /* ---------------- ADD PRACTICE ---------------- */
 
   const submit = async () => {
     if (!form.value) return;
@@ -51,8 +60,11 @@ export default function Spiritual() {
     load();
   };
 
+  /* ---------------- UI ---------------- */
+
   return (
     <div className="max-w-4xl">
+      {/* HEADER */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-neonPurple">
           Spirituality
@@ -62,19 +74,21 @@ export default function Spiritual() {
         </span>
       </div>
 
+      {/* XP FLASH */}
       {xpFlash && (
         <div className="fixed top-20 right-10 text-green-400 text-xl font-bold animate-pulse">
           {xpFlash}
         </div>
       )}
 
-      <p className="text-gray-400 mb-4">
-        Current Streak: 🔥 {streak} days
-      </p>
+      {/* AURA METER */}
+      <AuraMeter streak={streak} />
 
       {/* LOG PRACTICE */}
-      <div className="p-4 bg-black/40 rounded-xl border border-white/10 mb-6">
-        <h2 className="text-neonBlue mb-3">Log Practice</h2>
+      <div className="p-4 bg-black/40 rounded-xl border border-white/10 mb-8">
+        <h2 className="text-neonBlue mb-3">
+          Log Practice
+        </h2>
 
         <div className="flex gap-3 flex-wrap">
           <select
