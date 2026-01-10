@@ -1,17 +1,14 @@
-FROM node:18-alpine
-
-# Required for sqlite3 native builds
-RUN apk add --no-cache python3 make g++
+FROM node:18-bullseye
 
 WORKDIR /app
 
-# Copy only package files
+# Copy package files
 COPY server/package*.json ./
 
-# Install deps INSIDE container (Linux)
+# Install dependencies (native sqlite3 works here)
 RUN npm install
 
-# Copy app source (no node_modules)
+# Copy app source
 COPY server/. .
 
 EXPOSE 8080
