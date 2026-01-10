@@ -193,6 +193,18 @@ CREATE TABLE IF NOT EXISTS spiritual_logs (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY(user_id) REFERENCES users(id)
 );
+CREATE TABLE IF NOT EXISTS monsters (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER,
+  type TEXT,
+  name TEXT,
+  hp INTEGER DEFAULT 0,
+  is_active BOOLEAN DEFAULT 0,
+  is_defeated BOOLEAN DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(user_id) REFERENCES users(id)
+);
+
 
 
   `);

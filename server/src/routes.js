@@ -6,6 +6,7 @@ import userRoutes from "./modules/users/user.routes.js";
 import skillsRoutes from "./modules/skills/skills.routes.js";
 import workoutsRoutes from "./modules/workouts/workouts.routes.js";
 import spiritualRoutes from "./modules/spiritual/spiritual.routes.js"
+import monstersRoutes from "./modules/monsters/monsters.routes.js";
 const router = express.Router();
 
 router.use("/auth", authRoutes);
@@ -15,5 +16,5 @@ router.use("/skills", skillsRoutes);
 router.use("/workouts", workoutsRoutes);
 router.use("/nutrition", nutritionRoutes);
 router.use("/spiritual", spiritualRoutes);
-
+router.use("/monsters", monstersRoutes); 
 export default router;

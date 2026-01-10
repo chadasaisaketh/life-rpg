@@ -1,13 +1,9 @@
 import db from "./config/db.js";
 
-const run = async () => {
-  const users = await db.all("SELECT * FROM users");
-  const habits = await db.all("SELECT * FROM habits");
+await db.exec(`
+  ALTER TABLE monsters ADD COLUMN is_active BOOLEAN DEFAULT 0;
+  ALTER TABLE monsters ADD COLUMN is_defeated BOOLEAN DEFAULT 0;
+`);
 
-  console.log("USERS:", users);
-  console.log("HABITS:", habits);
-
-  process.exit(0);
-};
-
-run();
+console.log("✅ Monsters table fixed");
+process.exit(0);
