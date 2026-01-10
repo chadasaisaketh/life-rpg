@@ -1,18 +1,19 @@
 FROM node:18-alpine
 
+# Required for sqlite3 native builds
+RUN apk add --no-cache python3 make g++
+
 WORKDIR /app
 
-# Copy package.json from server folder
+# Copy only package files
 COPY server/package*.json ./
 
-# Install dependencies
+# Install deps INSIDE container (Linux)
 RUN npm install
 
-# Copy rest of server code
+# Copy app source (no node_modules)
 COPY server/. .
 
-# Expose Railway port
 EXPOSE 8080
 
-# Start app
 CMD ["node", "src/server.js"]
